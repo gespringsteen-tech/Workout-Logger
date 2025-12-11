@@ -91,6 +91,10 @@ public class WorkoutLoggerUI {
 
         root.add(buttons, BorderLayout.SOUTH);
 
+        // making the date column
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+
 
     }
 }
