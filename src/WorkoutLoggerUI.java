@@ -266,4 +266,29 @@ public class WorkoutLoggerUI {
 
 
     }
+    //to make labels and buttons easy for my grandpa
+    private static JLabel bigLabel(String text) {
+        JLabel l = new JLabel(text);
+        l.setFont(l.getFont().deriveFont(Font.BOLD, 16f));
+        return l;
+    }
+    private static JTextField bigTextField(int columns) {
+        JTextField tf = new JTextField(columns);
+        tf.setFont(tf.getFont().deriveFont(16f));
+        return tf;
+    }
+    private static JButton bigButton(String text) {
+        JButton b = new JButton(text);
+        b.setFont(b.getFont().deriveFont(Font.BOLD, 16f));
+        b.setMargin(new Insets(10, 16, 10, 16));
+        return b;
+    }
+    private static void makeBig(JSpinner spinner) {
+        JComponent editor = spinner.getEditor();
+        if (editor instanceof JSpinner.DefaultEditor de) {
+            de.getTextField().setFont(de.getTextField().getFont().deriveFont(16f));
+            de.getTextField().setColumns(6);
+        }
+        spinner.setPreferredSize(new Dimension(120, 34));
+    }
 }
