@@ -291,4 +291,184 @@ public class WorkoutLoggerUI {
         }
         spinner.setPreferredSize(new Dimension(120, 34));
     }
+    //making the trend graph with simple line chart
+    static class TrendDialog extends JDialog {
+
+        private final DefaultTableModel model;
+        private int metricCol = 2; // 2 = Reps, 3 = Weight, 4 = Body weight
+
+        private TrendDialog(Frame owner, DefaultTableModel model) {
+            super(owner, "Trends", true);
+            this.model = model;
+
+            setMinimumSize(new Dimension(780, 520));
+            JPanel root = new JPanel(new BorderLayout(10, 10));
+            root.setBorder(new EmptyBorder(12, 12, 12, 12));
+            setContentPane(root);
+
+            // Top controls
+            JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 6));
+            controls.add(new JLabel("Metric:"));
+            JComboBox<String> cbMetric = new JComboBox<>(new String[]{
+                    "Reps", "Weight (kg)", "Body weight (kg)"
+            });
+            cbMetric.setFont(cbMetric.getFont().deriveFont(15f));
+            controls.add(cbMetric);
+
+            controls.add(new JLabel("Range:"));
+            JComboBox<String> cbRange = new JComboBox<>(new String[]{
+                    "All time"   // you can extend to "Last 30 days", etc. later
+            });
+            cbRange.setFont(cbRange.getFont().deriveFont(15f));
+            controls.add(cbRange);
+
+            JButton btnRefresh = new JButton("Refresh");
+            btnRefresh.setFont(btnRefresh.getFont().deriveFont(Font.BOLD, 15f));
+            controls.add(btnRefresh);
+
+            root.add(controls, BorderLayout.NORTH);
+
+            // Chart panel that draws from table model
+            JPanel chartPanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    int w = getWidth();
+                    int h = getHeight();
+                    int margin = 50;
+
+                    // Background
+                    g2.setColor(new Color(245, 245, 245));
+                    g2.fillRoundRect(8, 8, w - 16, h - 16, 18, 18);
+
+                    int rowCount = model.getRowCount();
+                    if (rowCount == 0) {
+                        g2.setColor(Color.GRAY.darker());
+                        g2.setFont(getFont().deriveFont(Font.BOLD, 16f));
+                        String msg = "No data to display yet";
+                        FontMetrics fm = g2.getFontMetrics();
+                        g2.drawString(msg, (w - fm.stringWidth(msg)) / 2, h / 2);
+                        return;
+                    }
+
+                    // Collect values
+                    double[] values = new double[rowCount];
+                    int n = 0;
+                    for (int r = 0; r < rowCount; r++) {
+                        Object val = model.getValueAt(r, metricCol);
+                        if (val == null) continue;
+                        try {
+                            double d = Double.parseDouble(val.toString());
+                            values[n++] = d;
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                    if (n == 0) {
+                        g2.setColor(Color.GRAY.darker());
+                        g2.setFont(getFont().deriveFont(Font.BOLD, 16f));
+                        String msg = "No numeric data to plot";
+                        FontMetrics fm = g2.getFontMetrics();
+                        g2.drawString(msg, (w - fm.stringWidth(msg)) / 2, h / 2);
+                        return;
+                    }
+
+                    // Resize array if needed
+                    if (n < values.length) {
+                        double[] tmp = new double[n];
+                        System.arraycopy(values, 0, tmp, 0, n);
+                        values = tmp;
+                    }
+
+                    // Compute min/max
+                    double min = values[0];
+                    double max = values[0];
+                    for (double v : values) {
+                        if (v < min) min = v;
+                        if (v > max) max = v;
+                    }
+                    if (max == min) {
+                        // avoid flat line at border
+                        max = min + 1;
+                    }
+
+                    int x0 = margin;
+                    int y0 = h - margin;
+                    int x1 = w - margin;
+                    int y1 = margin;
+
+                    // Axes
+                    g2.setColor(Color.DARK_GRAY);
+                    g2.drawLine(x0, y0, x1, y0); // x-axis
+                    g2.drawLine(x0, y0, x0, y1); // y-axis
+
+                    // Labels
+                    g2.setFont(getFont().deriveFont(12f));
+                    String labelMin = String.format("%.1f", min);
+                    String labelMax = String.format("%.1f", max);
+                    g2.drawString(labelMin, x0 - 40, y0);
+                    g2.drawString(labelMax, x0 - 40, y1 + 5);
+
+                    String metricName = switch (metricCol) {
+                        case 2 -> "Reps";
+                        case 3 -> "Weight (kg)";
+                        case 4 -> "Body weight (kg)";
+                        default -> "";
+                    };
+                    g2.drawString(metricName, x0 + 5, y1 - 10);
+
+                    // Plot line
+                    int pointCount = values.length;
+                    if (pointCount == 1) {
+                        int x = x0 + (x1 - x0) / 2;
+                        int y = y0 - (int) ((values[0] - min) / (max - min) * (y0 - y1));
+                        g2.fillOval(x - 4, y - 4, 8, 8);
+                        return;
+                    }
+
+                    int[] xPoints = new int[pointCount];
+                    int[] yPoints = new int[pointCount];
+
+                    for (int i = 0; i < pointCount; i++) {
+                        double t = (double) i / (pointCount - 1); // 0..1
+                        int x = x0 + (int) (t * (x1 - x0));
+                        double norm = (values[i] - min) / (max - min); // 0..1
+                        int y = y0 - (int) (norm * (y0 - y1));
+                        xPoints[i] = x;
+                        yPoints[i] = y;
+                    }
+
+                    g2.setStroke(new BasicStroke(2f));
+                    g2.setColor(Color.BLUE);
+                    g2.drawPolyline(xPoints, yPoints, pointCount);
+
+                    // Points
+                    g2.setColor(Color.RED);
+                    for (int i = 0; i < pointCount; i++) {
+                        g2.fillOval(xPoints[i] - 3, yPoints[i] - 3, 6, 6);
+                    }
+                }
+            };
+            chartPanel.setPreferredSize(new Dimension(720, 380));
+            root.add(chartPanel, BorderLayout.CENTER);
+
+            // Metric selection and refresh
+            cbMetric.addActionListener(e -> {
+                String selected = (String) cbMetric.getSelectedItem();
+                if ("Reps".equals(selected)) metricCol = 2;
+                else if ("Weight (kg)".equals(selected)) metricCol = 3;
+                else if ("Body weight (kg)".equals(selected)) metricCol = 4;
+                chartPanel.repaint();
+            });
+            btnRefresh.addActionListener(e -> chartPanel.repaint());
+
+            JButton btnClose = new JButton("Close");
+            btnClose.addActionListener(e -> dispose());
+            JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            south.add(btnClose);
+            root.add(south, BorderLayout.SOUTH);
+        }
+    }
 }
