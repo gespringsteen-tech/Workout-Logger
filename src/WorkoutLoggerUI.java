@@ -51,5 +51,27 @@ public class WorkoutLoggerUI {
         gc.gridx = col++; form.add(lblReps, gc);
         gc.gridx = col++; form.add(spReps, gc);
 
+        col = 0;
+        gc.gridy = 1; gc.gridx = col++; form.add(lblWeight, gc);
+        gc.gridx = col++; form.add(spWeight, gc);
+        gc.gridx = col++; form.add(lblBodyWeight, gc);
+        gc.gridx = col++; form.add(spBodyWeight, gc);
+
+        root.add(form, BorderLayout.NORTH);
+
+        // making the center table
+        String[] cols = {"Date", "Exercise", "Reps", "Weight (kg)", "Body weight (kg)"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable table = new JTable(model);
+        table.setRowHeight(26);
+        table.setFont(table.getFont().deriveFont(15f));
+        table.getTableHeader().setFont(table.getTableHeader().getFont().deriveFont(Font.BOLD, 15f));
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createTitledBorder("Workout log"));
+        root.add(scroll, BorderLayout.CENTER);
+
+
     }
 }
