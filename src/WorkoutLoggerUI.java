@@ -94,7 +94,40 @@ public class WorkoutLoggerUI {
         // making the date column
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+        //how the buttons will work and making a new row
+        btnAdd.addActionListener(e -> {
+            String exercise = tfExercise.getText().trim();
+            if (exercise.isEmpty()) {
+                JOptionPane.showMessageDialog(frame,
+                        "Please enter an exercise name.",
+                        "Input error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int reps = ((Number) spReps.getValue()).intValue();
+            double weight = ((Number) spWeight.getValue()).doubleValue();
+            double bodyWeight = ((Number) spBodyWeight.getValue()).doubleValue();
 
+            if (reps <= 0) {
+                JOptionPane.showMessageDialog(frame,
+                        "Reps must be greater than zero.",
+                        "Input error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (weight < 0) {
+                JOptionPane.showMessageDialog(frame,
+                        "Weight cannot be negative.",
+                        "Input error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
+            String now = LocalDateTime.now().format(dtf);
+            model.addRow(new Object[]{now, exercise, reps, weight, bodyWeight});
+
+            // clear exercise field
+            tfExercise.setText("");
+        });
     }
 }
