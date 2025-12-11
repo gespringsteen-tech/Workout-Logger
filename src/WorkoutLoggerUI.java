@@ -195,6 +195,55 @@ public class WorkoutLoggerUI {
                 model.removeRow(row);
             }
         });
+        //exporting the table out of the application
+        btnExport.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Save workout log as CSV");
+            int choice = chooser.showSaveDialog(frame);
+            if (choice != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            File file = chooser.getSelectedFile();
+            // simple: add .csv if not present
+            if (!file.getName().toLowerCase().endsWith(".csv")) {
+                file = new File(file.getParentFile(), file.getName() + ".csv");
+            }
+
+            try (FileWriter fw = new FileWriter(file)) {
+                // header
+                for (int c = 0; c < model.getColumnCount(); c++) {
+                    fw.write(model.getColumnName(c));
+                    if (c < model.getColumnCount() - 1) fw.write(",");
+                }
+                fw.write("\n");
+
+                // rows
+                for (int r = 0; r < model.getRowCount(); r++) {
+                    for (int c = 0; c < model.getColumnCount(); c++) {
+                        Object val = model.getValueAt(r, c);
+                        String text = val == null ? "" : val.toString();
+                        // basic CSV escaping (wrap in quotes if needed)
+                        if (text.contains(",") || text.contains("\"")) {
+                            text = "\"" + text.replace("\"", "\"\"") + "\"";
+                        }
+                        fw.write(text);
+                        if (c < model.getColumnCount() - 1) fw.write(",");
+                    }
+                    fw.write("\n");
+                }
+
+                JOptionPane.showMessageDialog(frame,
+                        "Exported to:\n" + file.getAbsolutePath(),
+                        "Export complete",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(frame,
+                        "Error writing file:\n" + ex.getMessage(),
+                        "Export error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
 
     }
 }
