@@ -243,6 +243,26 @@ public class WorkoutLoggerUI {
                         JOptionPane.ERROR_MESSAGE);
             }
         });
+        //make it possible to present the trend graph
+        btnTrends.addActionListener(e -> {
+            TrendDialog.show(frame, model);
+        });
+
+        //make it possible so that when a row is pressed, show its values in the center form
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = table.getSelectedRow();
+                if (row >= 0) {
+                    tfExercise.setText(String.valueOf(model.getValueAt(row, 1)));
+                    spReps.setValue(model.getValueAt(row, 2));
+                    spWeight.setValue(model.getValueAt(row, 3));
+                    spBodyWeight.setValue(model.getValueAt(row, 4));
+                }
+            }
+        });
+
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
 
 
     }
