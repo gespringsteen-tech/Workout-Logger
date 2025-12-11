@@ -72,6 +72,25 @@ public class WorkoutLoggerUI {
         scroll.setBorder(BorderFactory.createTitledBorder("Workout log"));
         root.add(scroll, BorderLayout.CENTER);
 
+        //adding the bottom buttons to add, edit, delete, export and trend graph
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        JButton btnAdd = bigButton("Add");
+        JButton btnEdit = bigButton("Edit");
+        JButton btnDelete = bigButton("Delete");
+        JButton btnExport = bigButton("Export CSV");
+        JButton btnTrends = bigButton("Trends");
+
+        buttons.add(btnAdd);
+        buttons.add(btnEdit);
+        buttons.add(btnDelete);
+        buttons.add(new JSeparator(SwingConstants.VERTICAL) {{
+            setPreferredSize(new Dimension(18, 28));
+        }});
+        buttons.add(btnExport);
+        buttons.add(btnTrends);
+
+        root.add(buttons, BorderLayout.SOUTH);
+
 
     }
 }
