@@ -174,5 +174,27 @@ public class WorkoutLoggerUI {
             model.setValueAt(bodyWeight, row, 4);
         });
 
+        //make the ability to delete a row
+        btnDelete.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(frame,
+                        "Please select a row to delete.",
+                        "No selection",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int result = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Are you sure you want to delete this entry?",
+                    "Confirm delete",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (result == JOptionPane.YES_OPTION) {
+                model.removeRow(row);
+            }
+        });
+
     }
 }
