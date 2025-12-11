@@ -129,5 +129,50 @@ public class WorkoutLoggerUI {
             // clear exercise field
             tfExercise.setText("");
         });
+
+        //ability to edit row
+        btnEdit.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(frame,
+                        "Please select a row to edit.",
+                        "No selection",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String exercise = tfExercise.getText().trim();
+            if (exercise.isEmpty()) {
+                JOptionPane.showMessageDialog(frame,
+                        "Please enter an exercise name.",
+                        "Input error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int reps = ((Number) spReps.getValue()).intValue();
+            double weight = ((Number) spWeight.getValue()).doubleValue();
+            double bodyWeight = ((Number) spBodyWeight.getValue()).doubleValue();
+
+            if (reps <= 0) {
+                JOptionPane.showMessageDialog(frame,
+                        "Reps must be greater than zero.",
+                        "Input error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (weight < 0) {
+                JOptionPane.showMessageDialog(frame,
+                        "Weight cannot be negative.",
+                        "Input error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // Update cells
+            model.setValueAt(exercise, row, 1);
+            model.setValueAt(reps, row, 2);
+            model.setValueAt(weight, row, 3);
+            model.setValueAt(bodyWeight, row, 4);
+        });
+
     }
 }
